@@ -7,8 +7,7 @@
 #include "SysClock.h"
 #include "LED.h"
 #include "UART.h"
-#include "demo.h"
-#include "printf.h"
+#include "project.h"
 
 	
 int main(void){
@@ -19,8 +18,6 @@ int main(void){
 	UART2_Init();
 	
 	// application run function
-//	run_demo() ;
-//	hello ();
-	printf( "asdf \n" ) ;
-}				  // 0x40021000
+	run_project() ;
+}
 

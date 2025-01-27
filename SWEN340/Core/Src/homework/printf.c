@@ -9,15 +9,16 @@
  * */
 
 #include <stdarg.h>
-#include <string.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <LED.h>
+#include <string.h>
+#include <stdio.h>
 
 #include <UART.h>
+#include <LED.h>
 
 #define TRUE (1)
 #define FALSE (0)
+#define SIZE (BUFFER_SIZE * 4)
 
 /*
  * Writes to the USART
@@ -37,26 +38,45 @@ void set_char( char c, char* buffer, uint8_t* index )
     buffer[(*index)++] = c ;
 }
 
-uint8_t count_digits( long n ) 
-{
-    uint8_t answer = 0 ;
-    while ( n > 0 )
-    {
-        ++answer ;
-        n /= 10 ;
-    }
-    return answer ;
-}
 
-uint8_t count_digits_u( uint64_t n ) 
+/*
+ * Implementation of a printf function using vsprintf, but 
+ * it is limited to a buffer of 4 * BUFFER_SIZE in UART.c
+ **/
+int printf(const char* format, ...)
 {
-    uint8_t answer = 0 ;
-    while ( n > 0 )
+	char buffer[SIZE] ;
+    memset( buffer, '\0', SIZE ) ;
+    char write_buff[BUFFER_SIZE] ;
+	va_list args ;
+	int ret ;
+
+	va_start( args, format ) ;
+	ret = vsprintf( buffer, format, args ) ;
+	va_end( args ) ;
+
+    if ( ret <= 0 )
     {
-        ++answer ;
-        n /= 10 ;
+        return ret ;
+    } 
+
+	uint8_t length = ret ;
+    uint8_t i, wb_relative_index ;
+	for ( i = 0, wb_relative_index = 0 ; i < length ; i++, wb_relative_index++ )
+    {
+        if ( i % BUFFER_SIZE == BUFFER_SIZE - 2 ) 
+        {
+            write_buff[BUFFER_SIZE - 1] = '\0' ; 
+            write( write_buff , BUFFER_SIZE ) ;
+            wb_relative_index += 2 ;
+            i++ ;
+        }
+        write_buff[wb_relative_index % BUFFER_SIZE] = buffer[i] ;
     }
-    return answer ;
+    write_buff[i] = '\0' ;
+    write( write_buff, ( i % 32 ) + 1 ) ;
+
+	return ret ;
 }
 
 void base_to_string( uint64_t num, char* buffer, uint8_t* index, uint8_t base, uint8_t is_signed )
@@ -117,7 +137,12 @@ void base_to_string( uint64_t num, char* buffer, uint8_t* index, uint8_t base, u
 	return ;
 }
 
-int printf( const char* format, ... ) 
+/*
+ * Seperate implementation of printf that is not limited
+ * by the buffer needed in vsprintf. Uses majority functions
+ * created by me to do the work, but takes longer than printf
+ **/
+int blprintf( const char* format, ... )
 {
 	LED_On() ;
 	va_list args ;
@@ -126,13 +151,6 @@ int printf( const char* format, ... )
     char buffer[BUFFER_SIZE];
 
     uint8_t index = 0 ;
-
-//    while ( *format )
-//    {
-//		buffer[index++] = *format++ ;
-//    }
-//    buffer[index] = '\0' ;
-//    write(buffer, index) ;
     while ( *format )
     {
         if ( *format == '%' ) // FORMAT
@@ -141,12 +159,12 @@ int printf( const char* format, ... )
             {
             case 'd' : // integer case
                 jmp:
-            	long n = va_arg( args, long ) ;
-            	base_to_string(n, buffer, &index, 10, TRUE ) ;
+                long n = va_arg( args, long ) ;
+                base_to_string(n, buffer, &index, 10, TRUE ) ;
                 break ;
             case 'i' : // other integer case
-            	goto jmp ;
-            	break ;
+                goto jmp ;
+                break ;
             case 'u' : // unsigned int case
                 uint64_t un = va_arg( args, int ) ;
                 base_to_string( un, buffer, &index, 10, FALSE ) ;
@@ -159,7 +177,7 @@ int printf( const char* format, ... )
                 char* s = va_arg( args, char *) ;
                 while ( *s )
                 {
-                	set_char(*s, buffer, &index ) ;
+                    set_char(*s, buffer, &index ) ;
                     if ( index >= 31 )
                     {
                         buffer[index] = '\0' ;
@@ -183,18 +201,18 @@ int printf( const char* format, ... )
                 base_to_string( x, buffer, &index, 16, FALSE ) ;
                 break;
             case 'o' : // octal case
-            	uint64_t o = va_arg(args, long) ;
-				base_to_string( o, buffer, &index, 8, FALSE ) ;
-				break;
+                uint64_t o = va_arg(args, long) ;
+                    base_to_string( o, buffer, &index, 8, FALSE ) ;
+                    break;
             default :
-            	set_char(*(--format), buffer, &index ) ;
+                set_char(*(--format), buffer, &index ) ;
                 break;
             }
         }
         else if ( *format == '\n' ) // ESCAPE
         {
-        	set_char(0x0a, buffer, &index ) ; // LINE FEED
-        	set_char(0x0d, buffer, &index ) ; // CARRIAGE RETURN
+            set_char(0x0a, buffer, &index ) ; // LINE FEED
+            set_char(0x0d, buffer, &index ) ; // CARRIAGE RETURN
         }
         else // REGULAR
         {

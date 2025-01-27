@@ -6,3 +6,9 @@
  */
 
 #include "project.h"
+#include "printf.h"
+
+void run_project()
+{
+	printf("Hello, World\n") ;
+}
