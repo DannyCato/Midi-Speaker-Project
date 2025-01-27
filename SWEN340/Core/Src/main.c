@@ -21,6 +21,6 @@ int main(void){
 	// application run function
 //	run_demo() ;
 //	hello ();
-	printf("as %d %u %c %s %s \n", 1, 15, 'O', "please", "I Need something decently long, over 32");
+	printf( "as %c %s \n", 'O', "please" );
 }
 

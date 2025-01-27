@@ -70,7 +70,7 @@ void base_to_string( uint64_t num, char* buffer, uint8_t* index, uint8_t base, u
 	if ( is_signed )
 	{
 		uint64_t MSB = 0x8000000000000000 ; // Magic number with only the first bit set
-		if ( num & MSB )
+		if ( num & MSB ) // if num has first bit set (negative flag)
 		{
 			is_negative = 1 ;
 			num = ~num + 1 ; // flip by two's complement
@@ -103,10 +103,10 @@ void base_to_string( uint64_t num, char* buffer, uint8_t* index, uint8_t base, u
 	}
 
 	char storage ;
-	for ( uint8_t i = 0 ; i < length / 2 ; i++ )
+	for ( uint8_t i = 0 ; i < length / 2 ; i++ ) // reverse string because it was put in backwards
 	{
-		storage = buffer[front + length + i] ;
-		buffer[front + length + i] = buffer[front + i] ;
+		storage = buffer[front + length + i - 1] ;
+		buffer[front + length + i - 1] = buffer[front + i] ;
 		buffer[front + i] = storage ;
 	}
 
@@ -144,11 +144,11 @@ int printf( const char* format, ... )
             	goto jmp ;
             	break ;
             case 'u' : // unsigned int case
-                uint64_t un = va_arg( args, uint64_t) ;
-                base_to_string(un, buffer, &index, 10, FALSE ) ;
+                uint64_t un = va_arg( args, int ) ;
+                base_to_string( un, buffer, &index, 10, FALSE ) ;
                 break ;
             case 'c' : // character cased
-                char c = (char) va_arg( args, int ) ;
+                int c = va_arg( args, int ) ;
                 set_char( c, buffer, &index ) ;
                 break ;
             case 's' : // string case
@@ -174,8 +174,13 @@ int printf( const char* format, ... )
             //     float f = va_arg( args, float ) ;
             //     ftoa() ;
             case 'x' : // hexadecimal case
-                // put implementation here :)
+                uint64_t x = va_arg(args, uint64_t) ;
+                base_to_string( x, buffer, &index, 16, FALSE ) ;
                 break;
+            case 'o' : // octal case
+            	uint64_t o = va_arg(args, uint64_t) ;
+				base_to_string( o, buffer, &index, 8, FALSE ) ;
+				break;
             default :
             	set_char(*(--format), buffer, &index ) ;
                 break;
