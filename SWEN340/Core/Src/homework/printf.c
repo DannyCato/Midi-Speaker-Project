@@ -69,17 +69,17 @@ void base_to_string( uint64_t num, char* buffer, uint8_t* index, uint8_t base, u
 	uint8_t is_negative = 0 ;
 	if ( is_signed )
 	{
-		uint64_t MSB = 0x8000000000000000 ; // Magic number with only the first bit set
+		uint64_t MSB = 0x80000000 ; // Magic number with only the first bit set
 		if ( num & MSB ) // if num has first bit set (negative flag)
 		{
 			is_negative = 1 ;
 			num = ~num + 1 ; // flip by two's complement
 			// edge case if only most significant base is on.
-			if ( num == 0x8000000000000000 ) // check for this ^^^
+			if ( num == MSB ) // check for this ^^^
 			{
 				char* message = "overflow" ;
 				while ( *message ) {
-					set_char( *message, buffer, index ) ;
+					set_char( *message++, buffer, index ) ;
 				}
 				return ;
 			}
@@ -103,11 +103,15 @@ void base_to_string( uint64_t num, char* buffer, uint8_t* index, uint8_t base, u
 	}
 
 	char storage ;
+	uint8_t front_ptr ;
+	uint8_t back_ptr ;
 	for ( uint8_t i = 0 ; i < length / 2 ; i++ ) // reverse string because it was put in backwards
 	{
-		storage = buffer[front + length + i - 1] ;
-		buffer[front + length + i - 1] = buffer[front + i] ;
-		buffer[front + i] = storage ;
+		front_ptr = front + i ;
+		back_ptr = length - i - 1 ;
+		storage = buffer[front + back_ptr] ;
+		buffer[front + back_ptr] = buffer[front_ptr] ;
+		buffer[front_ptr] = storage ;
 	}
 
 	return ;
@@ -137,7 +141,7 @@ int printf( const char* format, ... )
             {
             case 'd' : // integer case
                 jmp:
-            	int n = va_arg( args, int ) ;
+            	long n = va_arg( args, long ) ;
             	base_to_string(n, buffer, &index, 10, TRUE ) ;
                 break ;
             case 'i' : // other integer case
@@ -153,7 +157,7 @@ int printf( const char* format, ... )
                 break ;
             case 's' : // string case
                 char* s = va_arg( args, char *) ;
-                while ( *s++ )
+                while ( *s )
                 {
                 	set_char(*s, buffer, &index ) ;
                     if ( index >= 31 )
@@ -162,6 +166,7 @@ int printf( const char* format, ... )
                         write( buffer , index ) ;
                         index = 0 ;
                     }
+                    ++s ;
                 }
                 break ;
             case '%' : // % case
@@ -174,11 +179,11 @@ int printf( const char* format, ... )
             //     float f = va_arg( args, float ) ;
             //     ftoa() ;
             case 'x' : // hexadecimal case
-                uint64_t x = va_arg(args, uint64_t) ;
+                uint64_t x = va_arg(args, long) ;
                 base_to_string( x, buffer, &index, 16, FALSE ) ;
                 break;
             case 'o' : // octal case
-            	uint64_t o = va_arg(args, uint64_t) ;
+            	uint64_t o = va_arg(args, long) ;
 				base_to_string( o, buffer, &index, 8, FALSE ) ;
 				break;
             default :
@@ -199,7 +204,7 @@ int printf( const char* format, ... )
         write( buffer, index ) ;
         index = 0 ;
         LED_Toggle() ;
-        USART_Delay( 150000 ) ;
+        USART_Delay( 150000 ) ; // debug delay to see if loop actually runs
         ++format;
     }
     va_end( args ) ;

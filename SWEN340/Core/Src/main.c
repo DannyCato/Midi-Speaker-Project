@@ -21,6 +21,6 @@ int main(void){
 	// application run function
 //	run_demo() ;
 //	hello ();
-	printf( "as %c %s \n", 'O', "please" );
-}
+	printf( "asdf \n" ) ;
+}				  // 0x40021000
 
