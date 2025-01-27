@@ -8,6 +8,7 @@
 #include "LED.h"
 #include "UART.h"
 #include "demo.h"
+#include "printf.h"
 
 	
 int main(void){
@@ -18,6 +19,8 @@ int main(void){
 	UART2_Init();
 	
 	// application run function
-	run_demo() ;
+//	run_demo() ;
+//	hello ();
+	printf("as %d %u %c %s %s \n", 1, 15, 'O', "please", "I Need something decently long, over 32");
 }
 
