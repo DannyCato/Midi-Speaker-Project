@@ -115,9 +115,8 @@ void USART_Write(USART_TypeDef * USARTx, uint8_t *buffer, uint32_t nBytes) {
 	// register has been transferred into the shift register.
 	for (i = 0; i < nBytes; i++) {
 		while (!(USARTx->ISR & USART_ISR_TXE));   	// wait until TXE (TX empty) bit is set
-		// Writing USART_DR automatically clears the TXE flag 	
+		// Writing USART_DR automatically clears the TXE flag
 		USARTx->TDR = buffer[i] & 0xFF;
-		USART_Delay(300);
 	}
 	while (!(USARTx->ISR & USART_ISR_TC));   		  // wait until TC bit is set
 	USARTx->ISR &= ~USART_ISR_TC;

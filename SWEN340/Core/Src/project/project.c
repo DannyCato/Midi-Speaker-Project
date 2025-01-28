@@ -10,5 +10,5 @@
 
 void run_project()
 {
-	printf("Hello, World\n") ;
+	printf("Hello, World\r\n") ;
 }
