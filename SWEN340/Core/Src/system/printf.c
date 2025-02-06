@@ -9,12 +9,15 @@
  * */
 
 #include <stdarg.h>
-//#include <stdint.h>
+#include <stdint.h>
 //#include <string.h>
 #include <stdio.h>
 
 #include <UART.h>
 //#include <LED.h>
+//
+//#define TRUE (1)
+//#define FALSE (0)
 
 static char LETTERS [128];
 
@@ -30,25 +33,26 @@ int puts (const char* string) {
 }
 
 int printf (const char *format, ...) {
-   va_list aptr;
-   int ret;
+   va_list aptr ;
+   char* letters = LETTERS ;
 
-   va_start(aptr, format);
-   ret = vsprintf(LETTERS, format, aptr);
-   va_end(aptr);
+   va_start(aptr, format) ;
+   vsprintf(LETTERS, format, aptr) ;
+   va_end(aptr) ;
 
-    int count = 0;
-    while (*format) {
-        if (*format == '\n') {
-            USART_Write (USART2, (uint8_t*)"\r", 1);
-            count++;
+    uint8_t count = 0 ;
+    while (*letters)
+    {
+        if (*letters == '\n')
+        {
+        	USART_Write( USART2, (uint8_t*)'\r' , 1 ) ;
+        	count++ ;
         }
-        USART_Write (USART2, (uint8_t*)format, 1);
-        count++;
-        format++;
+        USART_Write( USART2, (uint8_t*) letters, 1 ) ;
+        letters++ ;
     }
 
-   return(ret);
+   return count ;
 }
 
 ///*
@@ -56,13 +60,12 @@ int printf (const char *format, ...) {
 // **/
 //void write( char* str, uint32_t length)
 //{
-//    USART_Write( USART2, str, length );
+//    USART_Write( USART2, (uint8_t*) str, length );
 //}
-
-//#define TRUE (1)
-//#define FALSE (0)
-//#define SIZE (BUFFER_SIZE * 4)
 //
+//
+////#define SIZE (BUFFER_SIZE * 4)
+////
 ///*
 // * Used for escape sequence handling.
 // * Sets the character c to the place in buffer indicated by index
@@ -256,7 +259,7 @@ int printf (const char *format, ...) {
 //        write( buffer, index ) ;
 //        index = 0 ;
 //        LED_Toggle() ;
-//        USART_Delay( 150000 ) ; // debug delay to see if loop actually runs
+////        USART_Delay( 150000 ) ; // debug delay to see if loop actually runs
 //        ++format;
 //    }
 //    va_end( args ) ;

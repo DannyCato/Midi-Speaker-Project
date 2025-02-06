@@ -9,6 +9,8 @@
 #include "UART.h"
 #include "project.h"
 
+#include "printf.h"
+#include "endianConverter.h"
 	
 int main(void){
 
@@ -18,6 +20,9 @@ int main(void){
 	UART2_Init();
 	
 	// application run function
-	run_project() ;
+//	run_project() ;
+// 	activity4() ;
+	uint8_t byte = 0b10101010 ;
+	printf ( "answer = %x", reverse_byte( byte ) ) ;
 }
 
