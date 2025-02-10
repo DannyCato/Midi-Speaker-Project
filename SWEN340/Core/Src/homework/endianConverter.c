@@ -1,46 +1,35 @@
 /*
  * endianConverter.c 
- * Switches byte endianness
+ * Switches endianness
  *
  * Created by: dgc5878
  * 
  * */
 
-#include <stdint.h>
-
-#include <endianConverter.h>
-
-uint8_t reverse_byte( uint8_t rev_me )
-{
-    uint8_t ret = 0 ;
-    for ( int i = 0 ; i < 7 ; i++ )
-    {
-        if ( rev_me & 1 ) // if the lowest bit is set
-        {
-            ret += 1 ; // set the lsb to 1
-        }
-        ret = ret << 1 ; // shift ret to left to open a new value
-        rev_me = rev_me >> 1 ; // shift rev right to switch to next value
-    }
-    return ret ;
-}
+#include "endianConverter.h"
 
 uint64_t general_converter( uint8_t* p_values, uint8_t length )
 {
     uint64_t ret = 0 ; 
-    for ( int i = 0; i < length; i++ )
+    for ( int i = length - 1; i >= 0; i-- )
     {
-
+    	ret = ret << 8 ;
+    	ret += p_values[i] ;
     }
-    return 0 ;
+    return ret ;
 }
 
 uint16_t convert_to_uint16 (uint8_t* p_value)
 {
-    return ( reverse_byte(p_value[1]) << 8 ) + reverse_byte(p_value[0]) ;
+    return (uint16_t) general_converter( p_value, 2 ) ;
 }
 
 uint32_t convert_to_uint32 (uint8_t* p_value)
 {
-	return 0 ;
+	return (uint32_t) general_converter( p_value, 4 ) ;
+}
+
+uint32_t convert_to_24bit ( uint8_t* p_value )
+{
+	return (uint32_t) general_converter( p_value, 3 ) ;
 }

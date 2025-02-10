@@ -10,10 +10,11 @@
 
 #include <stdarg.h>
 #include <stdint.h>
-//#include <string.h>
 #include <stdio.h>
 
 #include <UART.h>
+
+#include <printf.h>
 //#include <LED.h>
 //
 //#define TRUE (1)
@@ -21,18 +22,26 @@
 
 static char LETTERS [128];
 
-int puts (const char* string) {
-    int count = 0;
-    while (*string) {
-        USART_Write (USART2, (uint8_t*)string, 1);
-        count++;
-        string++;
-    }
-    USART_Write (USART2, (uint8_t*)"\r\n", 2);
-    return count;
+int putchar( int c )
+{
+	uint8_t char_array[3] = { 0x0d, c, 0x00 } ; // 0x0d is ascii for carriage return
+	uint8_t* print_ptr = &char_array[1] ;
+	int length = 1 ;
+	if ( c == 0x0a ) // 0x0a is ascii for line feed
+	{
+		print_ptr = &char_array[0] ;
+		length++ ;
+	}
+	USART_Write( USART2, print_ptr, length );
+
+	return length ;
 }
 
-int printf (const char *format, ...) {
+int puts( const char* string ) {
+    return printf( string ) + putchar( 0x0a ) ; // 0x0a is ascii for line feed
+}
+
+int printf( const char *format, ... ) {
    va_list aptr ;
    char* letters = LETTERS ;
 
@@ -43,12 +52,7 @@ int printf (const char *format, ...) {
     uint8_t count = 0 ;
     while (*letters)
     {
-        if (*letters == '\n')
-        {
-        	USART_Write( USART2, (uint8_t*)'\r' , 1 ) ;
-        	count++ ;
-        }
-        USART_Write( USART2, (uint8_t*) letters, 1 ) ;
+        count += putchar( (int) *letters ) ;
         letters++ ;
     }
 
