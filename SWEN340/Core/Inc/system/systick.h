@@ -11,7 +11,7 @@
 // This function is to Initialize SysTick registers
 void init_systick();
 
-// This fuction is to create delay using SysTick timer counter
+// This function is to create delay using SysTick timer counter
 void delay_systick();
 
 #endif /* INC_SYSTICK_H_ */
