@@ -8,9 +8,6 @@
 #include "LED.h"
 #include "UART.h"
 #include "project.h"
-
-#include "printf.h"
-#include "endianConverter.h"
 	
 int main(void){
 

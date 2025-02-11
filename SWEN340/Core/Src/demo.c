@@ -14,6 +14,7 @@
 #include "LED.h"
 #include "UART.h"
 #include "demo.h"
+#include "systick.h"
 #include "stm32l4xx.h"
 
 
@@ -33,8 +34,9 @@ static void demo_of_UART_print(int counter){
 	n = sprintf((char *)buffer, "counter = %d\r\n", counter);
 	USART_Write(USART2, buffer, n);
 
-	delay_loop( 8000000 ) ;	// comment this out when you are ready to test delay_systick
-	// delay_systick() ;	// enable this when you are ready to test
+//	 delay_loop( 8000000 ) ;	// comment this out when you are ready to test delay_systick
+	delay_systick() ;	// enable this when you are ready to test
+	delay_systick() ;
 
 	// Toggle LED
 	LED_Toggle();
@@ -43,6 +45,7 @@ static void demo_of_UART_print(int counter){
 void run_demo(){
 	
 	int counter = 0;
+	init_systick() ;
 	
 	// Run a loop to print counter value on UART port
 	while (1)
