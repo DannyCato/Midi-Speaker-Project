@@ -10,5 +10,8 @@
 
 void run_project()
 {
-	run_demo() ;
+//	run_demo() ;
+//	read_and_print() ;
+
+	activity4() ;
 }
