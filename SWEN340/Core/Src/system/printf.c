@@ -32,6 +32,12 @@ int putchar( int c )
 		print_ptr = &char_array[0] ;
 		length++ ;
 	}
+	else if ( c == 0x0d ) // 0x0d is ascii for carriage returns
+	{
+		print_ptr = &char_array[0] ;
+		char_array[1] = 0x0a ;
+		length++ ;
+	}
 	USART_Write( USART2, print_ptr, length );
 
 	return length ;

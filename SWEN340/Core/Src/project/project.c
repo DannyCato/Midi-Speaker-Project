@@ -11,7 +11,5 @@
 void run_project()
 {
 //	run_demo() ;
-//	read_and_print() ;
-
-	activity4() ;
+	activity6() ;
 }
