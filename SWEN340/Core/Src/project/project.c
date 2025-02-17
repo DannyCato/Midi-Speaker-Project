@@ -7,9 +7,10 @@
 
 #include "project.h"
 #include "demo.h"
+#include "hw4.h"
 
 void run_project()
 {
 //	run_demo() ;
-	activity6() ;
+	read_indef() ;
 }

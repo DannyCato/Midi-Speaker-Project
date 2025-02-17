@@ -15,4 +15,7 @@ uint8_t   USART_Read(USART_TypeDef * USARTx);
 void USART_Delay(uint32_t us);
 void USART_IRQHandler(USART_TypeDef * USARTx, uint8_t *buffer, uint32_t * pRx_counter);
 
+//made by Danny Catorcini
+uint8_t USART_Read_NonBlocking(USART_TypeDef * USARTx) ;
+
 #endif /* __NUCLEO476_UART_H */

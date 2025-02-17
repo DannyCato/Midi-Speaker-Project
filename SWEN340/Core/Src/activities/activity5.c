@@ -1,5 +1,8 @@
 
 #include <stdint.h>
+#include <string.h>
+
+#include "printf.h"
 
 // make a struct for SysTick
 struct SysTick {
@@ -18,16 +21,25 @@ void activity5()
 
 	uint32_t i = 0 ;
 	uint8_t sec = 0 ;
+	char* command ;
 	while ( 1 )
 	{
-		if ( st->CSR & ( 1 << 16 ) ) // Checks if 16th bit is set
+		command = read_line() ;
+		if ( !strcmp ( command, "time" ) )
 		{
-			sec++ ;
-			if ( sec == 10 )
-			{
-				printf( "Good %d!\n\r", i++ ) ;
-				sec = 0 ;
-			}
+			printf( "Good %d!\n\r", i++ ) ;
 		}
+		delay_systick ();
+		i++ ;
+		command = 0 ;
+//		if ( st->CSR & ( 1 << 16 ) ) // Checks if 16th bit is set
+//		{
+//			sec++ ;
+//			if ( sec == 10 )
+//			{
+//				printf( "Good %d!\n\r", i++ ) ;
+//				sec = 0 ;
+//			}
+//		}
 	}
 }
