@@ -3,6 +3,7 @@
         "demo.h": "c",
         "stdint.h": "c",
         "endianconverter.h": "c",
-        "error_handler.h": "c"
-    }
+        "error_handler.h": "c",
+        "boot.h": "c"
+    },
 }

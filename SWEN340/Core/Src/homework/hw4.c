@@ -12,7 +12,7 @@ char get_char()
 	char c = USART_Read_NonBlocking( USART2 ) ;
 	if ( c != 0 )
 	{
-		printf( "%c\n", c ) ;
+		printf( "%c", c ) ;
 	}
 	return c ;
 }
@@ -36,10 +36,8 @@ void read_indef()
 				index = 0 ;
 			}
 		}
-		printf( "HALTING 1 SEC\n" ) ;
 		delay_systick() ;
-		printf( "count = %i\n", count ) ;
-		LED_Toggle() ;
 		count++ ;
+		LED_Toggle() ;
 	}
 }

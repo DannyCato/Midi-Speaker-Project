@@ -7,10 +7,10 @@
 
 #include "project.h"
 #include "demo.h"
-#include "hw4.h"
+#include "boot.h"
 
 void run_project()
 {
 //	run_demo() ;
-	read_indef() ;
+	boot_up() ;
 }
