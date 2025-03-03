@@ -12,10 +12,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <UART.h>
+#include "UART.h"
 
-#include <printf.h>
-//#include <LED.h>
+#include "printf.h"
+//#include "LED.h"
 //
 //#define TRUE (1)
 //#define FALSE (0)
@@ -43,7 +43,7 @@ int putchar( int c )
 		print_ptr = &char_array[0] ;
 		char_array[0] = 0x08 ;
 		char_array[1] = 0x20 ;
-		char_array[2] = 0x08 ;
+//		char_array[2] = 0x08 ;
 		length = 3 ;
 	}
 	USART_Write( USART2, print_ptr, length );
@@ -71,6 +71,35 @@ int printf( const char *format, ... ) {
     }
 
    return count ;
+}
+
+int printnf( int length, const char* format, ... )
+{
+	va_list aptr ;
+	char* letters = LETTERS ;
+
+	va_start(aptr, format) ;
+	vsprintf(LETTERS, format, aptr) ;
+	va_end(aptr) ;
+
+	uint8_t adjust = 0 ;
+	int i = 0 ;
+	while ( *letters && i < length )
+	{
+	   if ( *letters == '\n' )
+	   {
+		   adjust++ ;
+		   USART_Write( USART2, ( uint8_t* ) "\r", 1 ) ;
+	   }
+	   else if ( *letters == '\r' || *letters == '\b' )
+	   {
+		   adjust += putchar( (int) *letters ) ;
+	   }
+	   USART_Write( USART2, ( uint8_t* ) letters, 1 ) ;
+	   i++ ;
+	   letters++ ;
+	}
+	return length + adjust ;
 }
 
 ///*

@@ -7,7 +7,7 @@
 
 static char BUFFME[32] ;
 
-char get_char()
+char get_charac()
 {
 	char c = USART_Read_NonBlocking( USART2 ) ;
 	if ( c != 0 )
@@ -26,7 +26,7 @@ void read_indef()
 	char c ;
 	while ( 1 )
 	{
-		if ( ( c = get_char() ) )
+		if ( ( c = get_charac() ) )
 		{
 			BUFFME[index] = c ;
 			if ( BUFFME[index++] == 0x0d )

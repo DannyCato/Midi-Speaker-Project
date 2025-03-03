@@ -4,5 +4,6 @@
 int putchar( int ) ;
 int puts( const char* string ) ;
 int printf( const char* format, ... ) ;
+int printnf( int length, const char* format, ... ) ;
 
 #endif
