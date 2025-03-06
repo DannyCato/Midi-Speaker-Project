@@ -86,18 +86,13 @@ int printnf( int length, const char* format, ... )
 	int i = 0 ;
 	while ( *letters && i < length )
 	{
-	   if ( *letters == '\n' )
-	   {
-		   adjust++ ;
-		   USART_Write( USART2, ( uint8_t* ) "\r", 1 ) ;
-	   }
-	   else if ( *letters == '\r' || *letters == '\b' )
-	   {
-		   adjust += putchar( (int) *letters ) ;
-	   }
-	   USART_Write( USART2, ( uint8_t* ) letters, 1 ) ;
-	   i++ ;
-	   letters++ ;
+		if ( *letters == '\n' || *letters == '\r' || *letters == '\b' )
+		{
+			adjust += putchar( (int) *letters ) ;
+		}
+		USART_Write( USART2, ( uint8_t* ) letters, 1 ) ;
+		i++ ;
+		letters++ ;
 	}
 	return length + adjust ;
 }

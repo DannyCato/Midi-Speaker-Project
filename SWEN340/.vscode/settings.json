@@ -4,6 +4,8 @@
         "stdint.h": "c",
         "endianconverter.h": "c",
         "error_handler.h": "c",
-        "boot.h": "c"
+        "boot.h": "c",
+        "help.h": "c",
+        "running.h": "c"
     },
 }

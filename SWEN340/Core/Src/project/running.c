@@ -8,23 +8,25 @@
 #include "running.h"
 #include "help.h"
 #include "next.h"
-
-#define
+#include "play.h"
+#include "pause.h"
+#include "stop.h"
 
 
 char BUFFER[32];
 
-char* cmd_checkers[] = {"HELP", "NEXT", "PLAY", "PAUSE", "STOP"};
+// array of all keywords
+const char* cmd_checkers[] = {"HELP", "NEXT", "PLAY", "PAUSE", "STOP"};
 
+// typedef of all functions that are used. made into an array for easy expansion
 typedef void ( *func_t )();
-func_t functions[] = {help, next } ;
+func_t functions[] = {help, next, play, pause, stop};
 
-int size()
-
-void init_commands() {
-
-}
-
+/**
+ * returns a single character from the USART buffer and echoes it to the file
+ *
+ * @return char the next character to be read from the buffer
+ */
 char get_char()
 {
 	char c = USART_Read_NonBlocking( USART2 ) ;
@@ -35,11 +37,18 @@ char get_char()
 	return c ;
 }
 
+// extern so that other files can adjust the blinking status
+int blink = 0 ;
+
+/**
+ * main function for this application, called after boot-up sequence in boot.c. An endless loop that handles all the general actions of the program.
+ * Specifically it coordinates the writing and reading of buffer to activate certain methods based on keywords.
+ * It also handles the blinking functionality as it needs to be in-line with the general loop functionality
+ */
 void running() {
-	char capitalizer = 0b11011111 ; // Magic number that forces all letters to be represented by a capital through setting the capitalizer bit to always be zero
+	char capitalizer = 0b11011111 ; // Magic number that forces all letters to be represented by a capital through setting the lower case bit to always be low
 	uint8_t c ;
 	int i = 0 ;
-	int blink = 1 ;
 	int blink_counter = 0 ;
 	while( 1 )
 	{
@@ -49,64 +58,46 @@ void running() {
 			{
 				c &= capitalizer ;
 			}
-			if ( c == '\r' || c == '\n' )
+			if ( c == '\r' || c == '\n' ) // on pressing enter
 			{
-				if ( !(strcmp( BUFFER, cmd_list->Help ) ) )
+				int check = 1 ; // invalid checker set
+				for ( int i = 0 ; i < ARR_SIZE( cmd_checkers ) ; i++ ) // part that actually checks each word
 				{
-					help();
+					if ( ! (strcmp( BUFFER, cmd_checkers[i] ) ) ) // if equal
+					{
+						check = 0 ; // stop from printing invalid
+						functions[i]() ; // get function pointer from array and run it
+					}
 				}
-				else if ( !(strcmp(BUFFER, cmd_list->Next ) ) )
+				if ( check ) // if no keywords matched
 				{
-					printf( "NEED IMPLEMENTATION FOR %s\n", cmd_list->Next );
-//					next();
+					printf("Invalid Command\n") ;
 				}
-				else if ( !(strcmp(BUFFER, cmd_list->Play ) ) )
-				{
-					blink = 0 ;
-					printf( "NEED IMPLEMENTATION FOR %s\n", cmd_list->Play );
-//					play();
-				}
-				else if ( !(strcmp(BUFFER, cmd_list->Pause ) ) )
-				{
-					blink = 1 ;
-					printf( "NEED IMPLEMENTATION FOR %s\n", cmd_list->Pause );
-//					pause();
-				}
-				else if ( !(strcmp(BUFFER, cmd_list->Stop ) ) )
-				{
-					blink = 0 ;
-					printf( "NEED IMPLEMENTATION FOR %s\n", cmd_list->Stop );
-//					stop();
-				}
-				else // TESTING PART
-				{
-					printf( "%s\n", BUFFER ) ;
-				}
-				i = 0 ;
+				i = 0 ; // reset buffer
 			}
-			else if ( c == '\b' )
+			else if ( c == '\b' ) // on pressing backspace
 			{
-				if ( i > 0 ) {
+				if ( i > 0 ) { // if buffer is already empty
 					i--;
 					BUFFER[i] = 0 ;
 				}
 			}
-			else
+			else // otherwise put what was typed in to the buffer
 			{
-				BUFFER[i] = c ;
-				BUFFER[i + 1] = 0 ;
+				BUFFER[i] = c ; // add to buffer
+				BUFFER[i + 1] = 0 ; // put string delimiter to the next character
 				i++ ;
 			}
 		} // end check char block
 
 		if ( blink )  // begin blink check block
 		{
-			while ( !( GLBL_SYSTICK->CTRL & 0x10000 ) ) {} // hold until COUNT bit is set
+			while ( !( GLBL_SYSTICK->CTRL & 0x10000 ) ) {} // hold until COUNT bit is set. Blocks but the timer is so fast that it should not matter
 			blink_counter++;
-			if (blink_counter == 1000) {
+			if (blink_counter == 1000) { // once it reaches 1000, let the LED be toggeled
 				LED_Toggle();
 				blink_counter = 0 ;
 			}
-		}
+		} // end blink check block
 	}
 }
