@@ -17,6 +17,7 @@ int main(void){
 	UART2_Init();
 	
 	// application run function
-	run_project() ;
+//	run_project() ;
+	activity8() ;
 }
 
