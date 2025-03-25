@@ -3,7 +3,7 @@
 #include "printf.h"
 #include "GPIO.h"
 #include "LED.h"
-#include "stm32l4xx.h"
+
 
 // print a message every time yuor button is pressed
 
@@ -33,5 +33,4 @@ void activity9()
 			gate = 1 ;
 		}
 	}
-
 }
