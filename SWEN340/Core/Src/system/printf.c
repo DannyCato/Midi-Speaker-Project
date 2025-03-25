@@ -43,7 +43,7 @@ int putchar( int c )
 		print_ptr = &char_array[0] ;
 		char_array[0] = 0x08 ;
 		char_array[1] = 0x20 ;
-//		char_array[2] = 0x08 ;
+		char_array[2] = 0x08 ;
 		length = 3 ;
 	}
 	USART_Write( USART2, print_ptr, length );

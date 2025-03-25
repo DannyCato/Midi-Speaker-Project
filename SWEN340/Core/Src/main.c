@@ -18,6 +18,6 @@ int main(void){
 	
 	// application run function
 //	run_project() ;
-	activity9() ;
+	hw6();
 }
 
