@@ -14,6 +14,8 @@
 
 
 char BUFFER[32];
+uint8_t write_index = 0 ;
+uint8_t put_index = 0 ;
 
 // array of all keywords
 const char* cmd_checkers[] = {"HELP", "NEXT", "PLAY", "PAUSE", "STOP"};
@@ -40,55 +42,139 @@ char get_char()
 // extern so that other files can adjust the blinking status
 int blink = 0 ;
 
+int check = 0 ;
+
+void USART2_IRQHandler()
+{
+	uint8_t c = USART2->RDR ;
+	switch ( c )
+	{
+		case '\r':
+			BUFFER[write_index++] = 0 ;
+			check = 1 ;
+			break ;
+			
+		case '\b':
+			check = 2 ;
+			break ;
+
+		default:
+			if ( c >= 97 && c <= 122 ) 
+			{
+				c &= 0b11011111 ; // Magic number that forces all letters to be represented by a capital through setting the is_lower_case bit to always be false
+			}
+			BUFFER[write_index++] = c ; 
+			break;
+	}
+}
+
+void check_names()
+{
+	int invalid = 1 ; // invalid checker set
+	for ( int i = 0 ; i < ARR_SIZE( cmd_checkers ) ; i++ ) // part that actually checks each word
+	{
+		if ( ! (strcmp( BUFFER, cmd_checkers[i] ) ) ) // if equal
+		{
+			invalid = 0 ; // stop from printing invalid
+			functions[i]() ; // get function pointer from array and run it
+		}
+	}
+	if ( invalid ) // if no keywords matched
+	{
+		printf("Invalid Command\n") ;
+	}
+	write_index = 0 ;
+	put_index = 0 ;
+}
+
+void check_backspace()
+{
+	if ( write_index > 0 ) { // if buffer is not empty
+		write_index-- ;
+		BUFFER[write_index] = 0 ;
+	}
+}
+
+void checK_input_to_terminal()
+{
+	if ( put_index < write_index )
+	{
+		putchar( BUFFER[put_index++] ) ;
+	}
+	else if ( put_index > write_index )
+	{
+		putchar( '\b' ) ;
+		put_index-- ;
+	}
+}
+
 /**
  * main function for this application, called after boot-up sequence in boot.c. An endless loop that handles all the general actions of the program.
  * Specifically it coordinates the writing and reading of buffer to activate certain methods based on keywords.
  * It also handles the blinking functionality as it needs to be in-line with the general loop functionality
  */
 void running() {
-	char capitalizer = 0b11011111 ; // Magic number that forces all letters to be represented by a capital through setting the lower case bit to always be low
-	uint8_t c ;
-	int i = 0 ;
+	NVIC_EnableIRQ( USART2_IRQn ) ; // enable interrupts for USART2
+	USART2->CR1 |= 1 << 5 ;	 // enable RXNEIE for it
+
+	GLBL_SYSTICK->CTRL |= 1 << 1 ; // enable systick interrupts
+
+
 	int blink_counter = 0 ;
 	while( 1 )
 	{
+		if ( check == 1 ) // check is set by USART_IRQHandler and tells the main loop that a character worthy of a check has been pushed
+		{
+			printf("\n") ;
+			check_names() ;
+			check = 0 ;
+		}
+		else if ( check == 2 )
+		{
+			check_backspace() ;
+			check = 0 ;
+		}
+		
+		checK_input_to_terminal() ;
+		
 
-		if ( ( c = get_char() ) ) { // check char block
-			if ( c >= 97 && c <= 122 )
-			{
-				c &= capitalizer ;
-			}
-			if ( c == '\r' || c == '\n' ) // on pressing enter
-			{
-				int check = 1 ; // invalid checker set
-				for ( int i = 0 ; i < ARR_SIZE( cmd_checkers ) ; i++ ) // part that actually checks each word
-				{
-					if ( ! (strcmp( BUFFER, cmd_checkers[i] ) ) ) // if equal
-					{
-						check = 0 ; // stop from printing invalid
-						functions[i]() ; // get function pointer from array and run it
-					}
-				}
-				if ( check ) // if no keywords matched
-				{
-					printf("Invalid Command\n") ;
-				}
-				i = 0 ; // reset buffer
-			}
-			else if ( c == '\b' ) // on pressing backspace
-			{
-				if ( i > 0 ) { // if buffer is already empty
-					i--;
-					BUFFER[i] = 0 ;
-				}
-			}
-			else // otherwise put what was typed in to the buffer
-			{
-				BUFFER[i] = c ; // add to buffer
-				BUFFER[i + 1] = 0 ; // put string delimiter to the next character
-				i++ ;
-			}
-		} // end check char block
+
+		// if ( ( c = get_char() ) ) { // check char block
+		// 	if ( c >= 97 && c <= 122 )
+		// 	{
+		// 		c &= capitalizer ;
+		// 	}
+		// 	if ( c == '\r' || c == '\n' ) // on pressing enter
+		// 	{
+		// 		int check = 1 ; // invalid checker set
+		// 		for ( int i = 0 ; i < ARR_SIZE( cmd_checkers ) ; i++ ) // part that actually checks each word
+		// 		{
+		// 			if ( ! (strcmp( BUFFER, cmd_checkers[i] ) ) ) // if equal
+		// 			{
+		// 				check = 0 ; // stop from printing invalid
+		// 				functions[i]() ; // get function pointer from array and run it
+		// 			}
+		// 		}
+		// 		if ( check ) // if no keywords matched
+		// 		{
+		// 			printf("Invalid Command\n") ;
+		// 		}
+		// 		i = 0 ; // reset buffer
+		// 	}
+		// 	else if ( c == '\b' ) // on pressing backspace
+		// 	{
+		// 		if ( i > 0 ) { // if buffer is already empty
+		// 			i--;
+		// 			BUFFER[i] = 0 ;
+		// 		}
+		// 	}
+		// 	else // otherwise put what was typed in to the buffer
+		// 	{
+		// 		BUFFER[i] = c ; // add to buffer
+		// 		BUFFER[i + 1] = 0 ; // put string delimiter to the next character
+		// 		i++ ;
+		// 	}
+		// } // end check char block
 
 		if ( blink )  // begin blink check block
 		{

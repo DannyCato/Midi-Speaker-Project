@@ -5,6 +5,7 @@
 #include "printf.h"
 #include "help.h"
 #include "systick.h"
+#include "remote_controller.h"
 
 /**
  * called before program actually starts to make sure that the environment

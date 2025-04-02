@@ -5,7 +5,6 @@
 
 void EXTI9_5_IRQHandler()
 {
-	printf("P");
 	HAL_GPIO_EXTI_IRQHandler(S1_Pin) ;
 }
 

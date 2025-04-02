@@ -6,6 +6,8 @@
         "error_handler.h": "c",
         "boot.h": "c",
         "help.h": "c",
-        "running.h": "c"
+        "running.h": "c",
+        "systick.h": "c",
+        "printf.h": "c"
     },
 }
