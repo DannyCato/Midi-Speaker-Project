@@ -8,17 +8,17 @@ uint8_t get_remote_status()
 	return remote ;
 }
 
-uint8_t remote_toggle()
+void remote_toggle()
 {
 	remote ^= 1 ;
 }
 
-uint8_t remote_on()
+void remote_on()
 {
 	remote |= 1 ;
 }
 
-uint8_t remote_off()
+void remote_off()
 {
 	remote &= 0 ;
 }

@@ -11,6 +11,7 @@
 #include "play.h"
 #include "pause.h"
 #include "stop.h"
+#include "blink.h"
 
 
 char BUFFER[32];
@@ -38,9 +39,6 @@ char get_char()
 	}
 	return c ;
 }
-
-// extern so that other files can adjust the blinking status
-int blink = 0 ;
 
 int check = 0 ;
 
@@ -95,9 +93,13 @@ void check_backspace()
 	}
 }
 
-void checK_input_to_terminal()
+void put_input_to_terminal()
 {
-	if ( put_index < write_index )
+	if ( put_index == write_index )
+	{
+		return ;
+	}
+	else if ( put_index < write_index )
 	{
 		putchar( BUFFER[put_index++] ) ;
 	}
@@ -114,13 +116,9 @@ void checK_input_to_terminal()
  * It also handles the blinking functionality as it needs to be in-line with the general loop functionality
  */
 void running() {
-	NVIC_EnableIRQ( USART2_IRQn ) ; // enable interrupts for USART2
-	USART2->CR1 |= 1 << 5 ;	 // enable RXNEIE for it
-
-	GLBL_SYSTICK->CTRL |= 1 << 1 ; // enable systick interrupts
+	
 
 
-	int blink_counter = 0 ;
 	while( 1 )
 	{
 		if ( check == 1 ) // check is set by USART_IRQHandler and tells the main loop that a character worthy of a check has been pushed
@@ -135,55 +133,8 @@ void running() {
 			check = 0 ;
 		}
 		
-		checK_input_to_terminal() ;
-		
+		put_input_to_terminal() ;
 
-
-		// if ( ( c = get_char() ) ) { // check char block
-		// 	if ( c >= 97 && c <= 122 )
-		// 	{
-		// 		c &= capitalizer ;
-		// 	}
-		// 	if ( c == '\r' || c == '\n' ) // on pressing enter
-		// 	{
-		// 		int check = 1 ; // invalid checker set
-		// 		for ( int i = 0 ; i < ARR_SIZE( cmd_checkers ) ; i++ ) // part that actually checks each word
-		// 		{
-		// 			if ( ! (strcmp( BUFFER, cmd_checkers[i] ) ) ) // if equal
-		// 			{
-		// 				check = 0 ; // stop from printing invalid
-		// 				functions[i]() ; // get function pointer from array and run it
-		// 			}
-		// 		}
-		// 		if ( check ) // if no keywords matched
-		// 		{
-		// 			printf("Invalid Command\n") ;
-		// 		}
-		// 		i = 0 ; // reset buffer
-		// 	}
-		// 	else if ( c == '\b' ) // on pressing backspace
-		// 	{
-		// 		if ( i > 0 ) { // if buffer is already empty
-		// 			i--;
-		// 			BUFFER[i] = 0 ;
-		// 		}
-		// 	}
-		// 	else // otherwise put what was typed in to the buffer
-		// 	{
-		// 		BUFFER[i] = c ; // add to buffer
-		// 		BUFFER[i + 1] = 0 ; // put string delimiter to the next character
-		// 		i++ ;
-		// 	}
-		// } // end check char block
-
-		if ( blink )  // begin blink check block
-		{
-			while ( !( GLBL_SYSTICK->CTRL & 0x10000 ) ) {} // hold until COUNT bit is set. Blocks but the timer is so fast that it should not matter
-			blink_counter++;
-			if (blink_counter == 1000) { // once it reaches 1000, let the LED be toggeled
-				LED_Toggle();
-				blink_counter = 0 ;
-			}
-		} // end blink check block
+		blink_handler() ;
 	}
 }

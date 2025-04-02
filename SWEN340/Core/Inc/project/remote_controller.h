@@ -3,10 +3,10 @@
 
 uint8_t get_remote_status() ;
 
-uint8_t remote_toggle() ;
+void remote_toggle() ;
 
-uint8_t remote_on() ;
+void remote_on() ;
 
-uint8_t remote_off() ;
+void remote_off() ;
 
 #endif // REMOTE_CONT
