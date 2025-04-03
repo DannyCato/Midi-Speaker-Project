@@ -33,4 +33,10 @@ void init_systick();
 // This function is to create delay using SysTick timer counter
 void delay_systick();
 
+void toggle_systick_interrupt() ;
+
+void reset_clock() ; 
+
+uint32_t get_clock() ;
+
 #endif /* INC_SYSTICK_H_ */

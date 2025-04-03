@@ -29,3 +29,32 @@ void delay_systick()
 		while ( ! ( GLBL_SYSTICK->CTRL & 0x10000 ) ) {} // XOR so that the mask can always be true but if both are true then it exits
 	}
 }
+
+/**
+ * Toggles the systick interrupt
+ */
+void toggle_systick_interrupt()
+{
+	GLBL_SYSTICK->CTRL ^= 1 << 1 ; // toggle systick interrupts
+}
+
+// the current clock of the system
+uint32_t loc_clock = 0 ;
+
+// Handles when a Systick Interrupt is fired and only increments clock
+void SysTick_Handler()
+{
+	loc_clock++ ;
+}
+
+// Sets clock to zero
+void reset_clock()
+{
+	loc_clock = 0 ;
+}
+
+// get the current clock value
+uint32_t get_clock()
+{
+	return loc_clock ;
+}

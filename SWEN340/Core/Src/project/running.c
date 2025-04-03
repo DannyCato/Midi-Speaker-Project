@@ -12,6 +12,7 @@
 #include "pause.h"
 #include "stop.h"
 #include "blink.h"
+#include "local_controller.h"
 
 
 char BUFFER[32];
@@ -25,47 +26,41 @@ const char* cmd_checkers[] = {"HELP", "NEXT", "PLAY", "PAUSE", "STOP"};
 typedef void ( *func_t )();
 func_t functions[] = {help, next, play, pause, stop};
 
-/**
- * returns a single character from the USART buffer and echoes it to the file
- *
- * @return char the next character to be read from the buffer
- */
-char get_char()
-{
-	char c = USART_Read_NonBlocking( USART2 ) ;
-	if ( c != 0 )
-	{
-		printnf( 1, "%c", c ) ;
-	}
-	return c ;
-}
-
 int check = 0 ;
 
+/**
+ * Interrupt handler for USART2
+ */
 void USART2_IRQHandler()
 {
-	uint8_t c = USART2->RDR ;
-	switch ( c )
+	uint8_t c = USART2->RDR ; // always reads so that if in local mode it does not brick
+	if ( !get_local_status() ) // if not in local state
 	{
-		case '\r':
-			BUFFER[write_index++] = 0 ;
-			check = 1 ;
-			break ;
-			
-		case '\b':
-			check = 2 ;
-			break ;
+		switch ( c )
+		{
+			case '\r': // new line
+				BUFFER[write_index++] = 0 ;
+				check = 1 ;
+				break ;
+				
+			case '\b': // backspace
+				check = 2 ;
+				break ;
 
-		default:
-			if ( c >= 97 && c <= 122 ) 
-			{
-				c &= 0b11011111 ; // Magic number that forces all letters to be represented by a capital through setting the is_lower_case bit to always be false
-			}
-			BUFFER[write_index++] = c ; 
-			break;
+			default: // capitalize and put to buffer
+				if ( c >= 97 && c <= 122 ) 
+				{
+					c &= 0b11011111 ; // Magic number that forces all letters to be represented by a capital through setting the is_lower_case bit to always be false
+				}
+				BUFFER[write_index++] = c ; 
+				break;
+		}
 	}
 }
 
+/**
+ * Checks the names of the functions against the input buffer
+ */
 void check_names()
 {
 	int invalid = 1 ; // invalid checker set
@@ -81,10 +76,13 @@ void check_names()
 	{
 		printf("Invalid Command\n") ;
 	}
-	write_index = 0 ;
-	put_index = 0 ;
+	write_index = 0 ; // restart
+	put_index = 0 ; // restart
 }
 
+/**
+ * Checks if the last was a backspace and handles accordingly
+ */
 void check_backspace()
 {
 	if ( write_index > 0 ) { // if buffer is not empty
@@ -93,17 +91,20 @@ void check_backspace()
 	}
 }
 
+/**
+ * Puts a new character to the terminal from the buffer
+ */
 void put_input_to_terminal()
 {
-	if ( put_index == write_index )
+	if ( put_index == write_index ) // early return if nothing new
 	{
 		return ;
 	}
-	else if ( put_index < write_index )
+	else if ( put_index < write_index ) // if a characters was added
 	{
 		putchar( BUFFER[put_index++] ) ;
 	}
-	else if ( put_index > write_index )
+	else if ( put_index > write_index ) // if a character was removed
 	{
 		putchar( '\b' ) ;
 		put_index-- ;
@@ -116,25 +117,28 @@ void put_input_to_terminal()
  * It also handles the blinking functionality as it needs to be in-line with the general loop functionality
  */
 void running() {
-	
-
-
 	while( 1 )
 	{
-		if ( check == 1 ) // check is set by USART_IRQHandler and tells the main loop that a character worthy of a check has been pushed
+		if ( !get_local_status() ) // if not local
 		{
-			printf("\n") ;
-			check_names() ;
-			check = 0 ;
+			if ( check == 1 ) // check is set by USART_IRQHandler and tells the main loop that a character worthy of a check has been pushed
+			{
+				printf("\n") ; // put on a new line
+				check_names() ;
+				check = 0 ;
+			}
+			else if ( check == 2 ) // erase a character
+			{
+				check_backspace() ;
+				check = 0 ;
+			}
+			
+			put_input_to_terminal() ; // put a new character to the terminal 
 		}
-		else if ( check == 2 )
+		else
 		{
-			check_backspace() ;
-			check = 0 ;
+			local_handler() ; // do local tasks
 		}
-		
-		put_input_to_terminal() ;
-
-		blink_handler() ;
+		blink_handler() ; // handle blinking operations
 	}
 }

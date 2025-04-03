@@ -67,7 +67,7 @@ void find_event_type( char type, char** found, uint8_t* length )
 {
 	char* test_me = ( char* ) uSong->info_track_body ; // sets the byte that is compared
 	char event_type[2] = {0xFF, type} ; // sets what the expected meta event is
-	for ( uint8_t i = 0 ; i < uSong->info_track_length ; i++ ) // run through the length of the info track
+	for ( uint8_t i = 0 ; i < uSong->info_track_length && i < 100 ; i++ ) // run through the length of the info track
 	{
 //		printf("%0x %02x \n", &test_me[0], test_me[0]) ; // prints out the address and first byte that is being compared to meta events // a debugging statement that may prove helpful
 		if ( !( strncmp( event_type, test_me, 2 ) ) ) // if equal

@@ -12,6 +12,13 @@
         "blink.h": "c",
         "play.h": "c",
         "pause.h": "c",
-        "stm32l4xx.h": "c"
+        "stm32l4xx.h": "c",
+        "gpio.h": "c",
+        "remote_controller.h": "c",
+        "stm32l476xx.h": "c",
+        "local_controller.h": "c",
+        "main.h": "c",
+        "led.h": "c",
+        "uart.h": "c"
     },
 }
