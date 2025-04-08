@@ -17,6 +17,8 @@ int main(void){
 	UART2_Init();
 	
 	// application run function
-	run_project() ;
+//	run_project() ;
+//	run_adc_dac_demo() ;
+	activity11() ;
 }
 

@@ -39,7 +39,7 @@ void init_press_struct( Button* p ) {
 	p->press_event_flag = 0 ;
 	p->last_edge = 0 ; 
 	p->last_fall = 0 ;
-	p->last_rise = 0xfffffffffffff ; // set this to not zero so that the first press does not register as a double click
+	p->last_rise = 0xffffffff ; // set this to not zero so that the first press does not register as a double click
 	p->is_pressed = 0 ;
 	p->double_click_timeout = 250 ; // ms
 	p->hold_timeout = 1000 ; // ms
