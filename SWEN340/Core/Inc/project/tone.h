@@ -27,7 +27,7 @@ void reset_counter ();
 /**
  * Utility function that converts a frequency into a Systick timer ticks.
  */
-uint32_t hertz_to_systicks (float hertz);
+uint32_t hertz_to_midi_ticks (float hertz);
 
 /**
  * Adds a tone to be played.

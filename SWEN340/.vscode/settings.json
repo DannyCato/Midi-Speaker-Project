@@ -23,6 +23,8 @@
         "hw8.h": "c",
         "song.h": "c",
         "stdio.h": "c",
-        "next.h": "c"
+        "next.h": "c",
+        "tone.h": "c",
+        "dac.h": "c"
     },
 }
