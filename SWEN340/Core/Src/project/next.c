@@ -2,24 +2,20 @@
 #include <stdio.h>
 
 #include "next.h"
-#include "song.h"
 #include "printf.h"
 #include "endianConverter.h"
 
 uint8_t num_songs = 5 ;
 uint8_t current_song = 0 ;
 
-typedef struct {
-	uint8_t* start ;
-	uint8_t* info_track_start ;
-	uint8_t* info_track_body ;
-	uint8_t* general_body ;
-	uint32_t info_track_length ;
-} structuredSong ;
-
 structuredSong instance ; // I thought I could lay a pointer of this over the file, but it
 // doesn't like that bc it expects the song to be filled with pointers so i needed an instance
 structuredSong* uSong = &instance ;
+
+structuredSong* get_uSong()
+{
+	return uSong ;
+}
 
 ///**
 // * Debugging tool that takes a string and prints it to the terminal. Helpful for seeing if memory was corrupted

@@ -8,6 +8,8 @@
 #include "LED.h"
 #include "UART.h"
 #include "project.h"
+
+#include "hw8.h"
 	
 int main(void){
 
@@ -17,6 +19,17 @@ int main(void){
 	UART2_Init();
 	
 	// application run function
-	run_project() ;
+	// run_project() ;
+	uint8_t delay1[] = { 0x3B, 0x80, 0x27, 0x00 } ;
+	printf( "Delay of %d ", parse_delay( delay1 ) ) ;
+
+	uint8_t delay2[] = { 0x83, 0x18, 0x91, 0x54, 0x64 } ;
+	printf( "Delay of %d ", parse_delay( delay2 ) ) ;
+
+	uint8_t delay3[] = { 0xC5, 0x92, 0x74, 0xE3, 0x74, 0x12 } ;
+	printf( "Delay of %d ", parse_delay( delay3 ) ) ;
+
+	uint8_t delay4[] = { 0x90, 0x82, 0x93, 0x64, 0xD3, 0x89 } ;
+	printf( "Delay of %d ", parse_delay( delay4 ) ) ;
 }
 
