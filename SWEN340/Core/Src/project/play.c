@@ -13,7 +13,7 @@ void play() {
     blink_off() ; // extern variable from running to adjust the blink status of the file
     LED_On() ; // turn on an LED
 
-    music_reset() ;
+    init_music() ;
     music_on() ;
 }
 

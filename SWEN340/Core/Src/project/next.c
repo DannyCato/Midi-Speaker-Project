@@ -193,4 +193,5 @@ void next()
 	printf("%ld\n", 60000000 / song_info.tpqn) ;
 
 	current_song = (current_song + 1) % num_songs ; // increment current song
+	next_song() ;
 }

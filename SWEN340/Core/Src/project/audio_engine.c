@@ -3,29 +3,51 @@
 #include "parse.h"
 #include "systick.h"
 #include "tone.h"
+#include "stop.h"
 #include "dac.h"
 #include "printf.h"
 #include <math.h>
 
 uint8_t on = 0 ;
 uint32_t start_time = 0 ;
+uint32_t offset_time = 0 ;
 uint8_t speaker_up = 0 ;
+
+uint8_t next_song_flag = 1 ;
 
 #define SOUNDS 3
 sound music_queue[SOUNDS] ;
 uint8_t music_index = 0 ;
+
+void set_offset_time()
+{
+    offset_time = get_clock() ;
+}
+
+void next_song()
+{
+    next_song_flag = 1 ;
+}
+
+uint32_t get_start_time()
+{
+    return start_time ;
+}
 
 uint8_t music_status()
 {
     return on ;
 }
 
-void music_on()
+void music_resume() 
 {
-
-    start_buffered_parse_song( get_uSong() ) ;
-    start_time = get_clock() ;
     on = 1 ;
+}
+
+void music_on()
+{    
+    start_time = get_clock() ;
+    music_resume() ;
     do_music() ;
 }
 
@@ -36,6 +58,9 @@ void music_off()
 
 void music_reset()
 {
+    start_time = 0 ;
+    offset_time = 0 ;
+    start_buffered_parse_song( get_uSong() ) ;
     music_off() ;
     reset_parse() ;
 }
@@ -50,6 +75,15 @@ void reset_sound_struct(int i)
 
 void init_music()
 {
+    if ( !next_song_flag )
+    {
+        if ( offset_time != 0 )
+        {
+            offset_time = get_clock() ;
+        } 
+        return ;
+    }
+    next_song_flag = 0 ;
     for ( int i = 0 ; i < SOUNDS ; i++ )
     {
         reset_sound_struct(i) ;
@@ -62,7 +96,7 @@ void push( event e )
 {
     music_queue[music_index].note = e.info[0] ;
     uint32_t vel = e.info[1] * 16 ;
-    music_queue[music_index].velocity = ( vel < 3000 ) ? 3000 : ( ( vel > 4096 ) ? 4096 : vel ) ;
+    music_queue[music_index].velocity = ( vel < 3500 ) ? 3500 : ( ( vel > 4096 ) ? 4096 : vel ) ;
     music_queue[music_index].half_cycle = ( hertz_to_midi_ticks( get_frequency( e.info[0] ) ) ) >> 1 ;
     music_index++ ;
 }
@@ -78,15 +112,16 @@ void pop( event e )
             found = 1 ;
             reset_sound_struct( i ) ;
             music_index-- ;
-            break ;
+            continue ;
         }
         if ( found )
         {
-            music_queue[i - 1].velocity = music_queue[i].velocity ;
-            music_queue[i - 1].note = music_queue[i].note ;
-            music_queue[i - 1].half_cycle = music_queue->half_cycle ;
-        }
+        music_queue[i - 1].velocity = music_queue[i].velocity ;
+        music_queue[i - 1].note = music_queue[i].note ;
+        music_queue[i - 1].half_cycle = music_queue[i].half_cycle ;
+        } 
     }
+    
 }
 
 void drive_music(uint32_t clk)
@@ -119,7 +154,7 @@ void do_music()
         drive_music(clk) ;
     }
     
-    if ( get_next_time() > clk - start_time )
+    if ( get_next_time() > clk - start_time + offset_time)
     {
         // printf("waiting until %d ticks have passed, ", get_next_time() ) ;
         return ;
@@ -138,7 +173,7 @@ void do_music()
         break ; 
     case 0x2F :
         // printf("End of Song \n") ;
-        music_off() ;
+        stop() ;
         break ; 
     default:
         break;

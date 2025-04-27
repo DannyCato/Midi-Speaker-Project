@@ -76,37 +76,37 @@ void parse_next_event( uint8_t* messages, uint8_t trk_num, uint32_t trk_length )
     if ( *messages == 0xFF )
     {
         uint8_t length = *(messages + 2) ;
-        printf("META EVENT type: %02X length %d, info = ", messages[1], length ) ;
+        // printf("META EVENT type: %02X length %d, info = ", messages[1], length ) ;
         if ( *( messages + 1 ) == 0x2F )
         {
             buffer[index].type = 0x2F;
             EOT[trk_num] = 1 ;
             return ;
         }
-        for ( int i = 0 ; i < length ; i++ )
-        {
-            printf("%02X ", messages[3 + i]) ;
-        }
+        // for ( int i = 0 ; i < length ; i++ )
+        // {
+        //     printf("%02X ", messages[3 + i]) ;
+        // }
         messages += length + 3 ;
         parse_buffer_index[trk_num] += messages - starting_addr ;
-        printf("\n%02X\n", *messages) ;
+        // printf("\n%02X\n", *messages) ;
         goto restart_wo_incrementing ; // goto label for the vibes and faster for cpu
     }
-    printf("Delay: %d", buffer[index].delay) ;
+    // printf("Delay: %d", buffer[index].delay) ;
     trk_time[trk_num] += buffer[index].delay ;
     buffer[index].at_time = trk_time[trk_num] ;
     buffer[index].type = ( *messages >> 4 ) ;
-    printf( ", Type: %02X", buffer[index].type ) ;
+    // printf( ", Type: %02X", buffer[index].type ) ;
     // buffer[i].channel = *messages & 0b00001111 ;
     buffer[index].info = ++messages ;
-    printf( ", Info: %02X..%02X \n", buffer[index].info[0], buffer[index].info[1] ) ;
+    // printf( ", Info: %02X..%02X \n", buffer[index].info[0], buffer[index].info[1] ) ;
     
     uint8_t reset_flag = 1 ;
     if ( buffer[index].type == 8 || buffer[index].type == 9 )
     {
     	reset_flag = 0 ;
         wbuffer_index++ ;
-        printf("%d type = %d, note = %02X  \n", index, buffer[index].type, buffer[index].info[0] ) ;
+        // printf("%d type = %d, note = %02X  \n", index, buffer[index].type, buffer[index].info[0] ) ;
     }
 
     if ( buffer[index].type == 0xC || buffer[index].type == 0xD )
@@ -126,7 +126,6 @@ void parse_next_event( uint8_t* messages, uint8_t trk_num, uint32_t trk_length )
     parse_buffer_index[trk_num] += messages - starting_addr ;
 }
 
-
 void start_buffered_parse_song( structuredSong* s ) 
 {
     my_song = s ;
@@ -137,7 +136,7 @@ void start_buffered_parse_song( structuredSong* s )
     }
     while ( wbuffer_index - rbuffer_index < BF_Size && parse_buffer_index[0] < trk0->length && EOT[0] == 0 )
     {
-        printf(".") ;
+        // printf(".") ;
         parse_next_event( &( trk0->messages[parse_buffer_index[0]] ), 0, trk0->length ) ;
     }
 }

@@ -25,6 +25,9 @@
         "stdio.h": "c",
         "next.h": "c",
         "tone.h": "c",
-        "dac.h": "c"
+        "dac.h": "c",
+        "parse.h": "c",
+        "audio_engine.h": "c",
+        "project.h": "c"
     },
 }

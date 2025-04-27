@@ -21,4 +21,12 @@ void do_music() ;
 
 uint8_t music_status() ;
 
+void music_resume() ;
+
+uint32_t get_start_time() ;
+
+void next_song() ;
+
+void set_offset_time() ;
+
 #endif // AUDIO_ENGINE
