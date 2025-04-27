@@ -1,20 +1,23 @@
 #include <string.h>
-#include <stdio.h>
+#include <math.h>
 
 #include "next.h"
 #include "printf.h"
 #include "endianConverter.h"
+#include "audio_engine.h"
 
 uint8_t num_songs = 5 ;
 uint8_t current_song = 0 ;
 
+track itrk ;
+track trk0, trk1, trk2 ;
 structuredSong instance ; // I thought I could lay a pointer of this over the file, but it
 // doesn't like that bc it expects the song to be filled with pointers so i needed an instance
 structuredSong* uSong = &instance ;
 
-structuredSong* get_uSong()
+float get_us_per_tpqn()
 {
-	return uSong ;
+	return round( uSong->tpqn / uSong->division ) ;
 }
 
 ///**
@@ -30,6 +33,26 @@ structuredSong* get_uSong()
 //	putchar('\n') ;
 //}
 
+uint32_t parse_normal_length( uint8_t* address, uint8_t bytes )
+{
+	uint32_t ret = 0 ;
+	for ( uint8_t i = 0 ; i < bytes ; i++ )
+	{
+		ret <<= 8 ;
+		ret |= *(address + i) ;
+	}
+	return ret ;
+}
+
+void init_mtrk( track* trk_n ) {
+	trk_n->start = 0 ;
+	trk_n->length = 0 ;
+	trk_n->messages = 0 ;
+	trk_n->active = 0 ;
+}
+
+uint8_t initialized = 0 ;
+
 /**
  * takes a song struct and parses it to get the addresses some of the midi method headers and lengths
  *
@@ -37,43 +60,115 @@ structuredSong* get_uSong()
  */
 void format_usable_song( song s )
 {
+	initialized = 1 ;
+
+	uSong->info_track = &itrk ;
+	init_mtrk( &itrk ) ;
+	uSong->trks[0] = &trk0 ;
+	init_mtrk( &trk0 ) ;
+	uSong->trks[1] = &trk1 ;
+	init_mtrk( &trk1 ) ;
+	uSong->trks[2] = &trk2 ;
+	init_mtrk( &trk2 ) ;
+
 	uSong->start = s.p_song ;
-	uSong->info_track_start = s.p_song + 14 ;
-	uSong->info_track_length = 0 ;
-	for ( int i = 0 ; i < 4 ; i++ )
+	uSong->format = ( uint16_t ) parse_normal_length( s.p_song + 8, 2 ) ;
+	uSong->ntrks = ( uint16_t ) parse_normal_length( s.p_song + 10, 2 ) ;
+	uSong->division = ( uint16_t ) parse_normal_length( s.p_song + 12, 2 ) ; 
+
+	uint8_t i = 0 ;
+	track* trkn ;
+	uint8_t* next_trk_start = s.p_song + 14 ;
+	do
 	{
-		uSong->info_track_length <<= 8 ;
-		uSong->info_track_length |= *(s.p_song + 18 + i) ;
-	}
-	uSong->info_track_body = s.p_song + 22 ;
-	uSong->general_body = s.p_song + 22 + uSong->info_track_length ;
-//	print_raw(uSong->start, s.size) ;
+		if ( i == 0 )
+		{
+			trkn = uSong->info_track ;
+			i++ ;
+		}
+		else
+		{
+			trkn = uSong->trks[i - 1] ;
+			i++ ;
+		}
+		trkn->start = next_trk_start ;
+		trkn->length = parse_normal_length( trkn->start + 4, 4 ) ;
+		trkn->messages = trkn->start + 8 ;
+		trkn->active = 1 ;
+		next_trk_start = trkn->messages + trkn->length ;
+
+		// printf("trk# = %d, trkn messages + length = %p, Start of Song = %p, calculated size = %X, value at calc size = %X. \n", i, next_trk_start, uSong->start, next_trk_start - uSong->start, s.p_song[next_trk_start - uSong->start] ) ;
+		// printf("Size of Song = %X, value at size of song = %X\n", s.size, s.p_song[s.size] ) ;
+	} 
+	while ( ( next_trk_start - uSong->start ) < s.size && i < uSong->ntrks ) ;
+
 }
 
-/**
- * Finds a meta event by its type and puts the return values into found and length
- *
- * @param type char. the meta event to be found
- * @param found char**. when meta event is found this is set to it
- * @param length int*. reads the byte after event to get information about the event
- *
- * @return void
- */
-void find_event_type( char type, char** found, uint8_t* length )
+typedef struct meta_info {
+	uint8_t* name ;
+	uint8_t  name_length ;
+	uint8_t* copyright ;
+	uint8_t  copyright_length ;
+	uint32_t tpqn ;
+	uint8_t  tpqn_length ;
+} meta_info ;
+
+meta_info song_info ;
+uint8_t not_found[] = "No Information Found" ;
+
+void format_necessary_meta_events()
 {
-	char* test_me = ( char* ) uSong->info_track_body ; // sets the byte that is compared
-	char event_type[2] = {0xFF, type} ; // sets what the expected meta event is
-	for ( uint8_t i = 0 ; i < uSong->info_track_length && i < 100 ; i++ ) // run through the length of the info track
+	song_info.copyright = not_found ;
+	song_info.copyright_length = 21 ;
+	uint8_t* search_through = uSong->info_track->messages ;
+	uint8_t length ;
+	for ( int i = 0 ; i < uSong->info_track->length ; i++ )
 	{
-//		printf("%0x %02x \n", &test_me[0], test_me[0]) ; // prints out the address and first byte that is being compared to meta events // a debugging statement that may prove helpful
-		if ( !( strncmp( event_type, test_me, 2 ) ) ) // if equal
+		if ( *search_through++ == 0xFF )
 		{
-			*found = &test_me[3] ;
-			*length = ( uint8_t )( test_me[2] ) ;
-			break ;
+			switch ( *search_through++ )
+			{
+			case 0x03 : // Title
+				song_info.name_length = *search_through++ ; 
+				song_info.name = search_through ;
+				search_through += song_info.name_length ;
+				i += song_info.name_length + 1 ;
+				break ;
+			case 0x02 : // Copyright
+				song_info.copyright_length = *search_through++ ;
+				song_info.copyright = search_through ;
+				search_through += song_info.copyright_length ;
+				i += song_info.copyright_length + 1 ;
+				break ;
+			case 0x51 : // Tempo
+				song_info.tpqn_length = *search_through++ ;
+				song_info.tpqn = 0 ;
+				for ( uint8_t j = 0 ; j < 3 ; j++ )
+				{
+					song_info.tpqn <<= 8 ;
+					song_info.tpqn |= *search_through++ ;
+				}
+				uSong->tpqn = song_info.tpqn ;
+				i += song_info.tpqn_length + 1 ;
+				break ;
+			default:
+				length = *search_through ;
+				search_through += length ;
+				i += length + 1 ;
+				break;
+			}
 		}
-		test_me++ ;
 	}
+}
+
+structuredSong* get_uSong()
+{
+	if ( !initialized)
+	{
+		format_usable_song( get_song( current_song ) ) ;
+		format_necessary_meta_events() ;
+	}
+	return uSong ;
 }
 
 /**
@@ -89,40 +184,13 @@ void next()
 //	print_raw( s.p_song, s.size ) ; // debugging statement that might prove helpful later
 	format_usable_song( s ) ; // parse current song to get get useful general markers
 
-	// find and print title
-	char* title = 0 ;
-	uint8_t title_length = 0 ;
-	find_event_type( 0x03, &title, &title_length ) ; // find and return information
-
-	printnf( ( int ) ( title_length + 8 ), "Title = %s", title ) ; // print
-	putchar('\n') ;
-
-	// find and print copyright
-	char* copy = 0 ;
-	uint8_t copy_length = 0 ;
-	find_event_type( 0x02, &copy, &copy_length ) ; // find and return information
-
-	if (copy != NULL && copy_length > 0) { // if copyright info exists
-		printnf( ( int ) copy_length + 24, "Copyright Information = %s", copy ) ; // print
-	} else {
-	    printf("No Information Found"); // handle otherwise
-	}
-	putchar('\n') ;
-
-	// find, print and process tempo
-	char* char_tempo = 0 ;
-	uint8_t tempo_length = 0 ;
-	find_event_type( 0x51, &char_tempo, &tempo_length ) ; // find and return information
-
-	uint32_t final_tempo = 0 ;
-	for ( int i = 0 ; i < tempo_length ; i++ ) // format final_tempo to be an integer
-	{
-		final_tempo <<= 8 ;
-		final_tempo += char_tempo[i] ;
-	}
-
-	printf( "Tempo = %li", final_tempo ) ; // print
-	putchar('\n') ;
+	format_necessary_meta_events() ;
+	printf("Title = ") ;
+	printnf(song_info.name_length, "%s", song_info.name) ;
+	printf("\nCopyright = ") ;
+	printnf(song_info.copyright_length + 1, "%s", song_info.copyright) ;
+	printf("\nTempo = ") ;
+	printf("%ld\n", 60000000 / song_info.tpqn) ;
 
 	current_song = (current_song + 1) % num_songs ; // increment current song
 }

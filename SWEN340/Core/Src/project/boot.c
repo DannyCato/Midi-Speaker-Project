@@ -7,6 +7,7 @@
 #include "help.h"
 #include "systick.h"
 #include "local_controller.h"
+#include "dac.h"
 
 /**
  * called before program actually starts to make sure that the environment
@@ -31,6 +32,9 @@ void boot_up(uint8_t help_on_start)
 
 	init_systick() ;
 	toggle_systick_interrupt() ;
+
+	DAC_Init() ;
+	DAC_Start() ;
 
 	printf( "***REMOTE MODE ACTIVE***\n" ) ;
 	running() ;

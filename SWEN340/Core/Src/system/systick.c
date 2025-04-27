@@ -1,4 +1,6 @@
 #include "systick.h"
+#include "audio_engine.h"
+
 
 // This function is to Initialize SysTick registers
 void init_systick()
@@ -9,7 +11,7 @@ void init_systick()
 	// Disable SysTick by clearing the CTRL (CSR) register.
 	GLBL_SYSTICK->CTRL &= 0 ;
 	// Set the LOAD (RVR) to 8 million to give us a 100 milliseconds timer.
-	GLBL_SYSTICK->LOAD = 79999 ;
+	GLBL_SYSTICK->LOAD = 79 ;
 	// Set the clock source bit in the CTRL (CSR) to the internal clock.
 	GLBL_SYSTICK->CTRL |= (1 << 2) ;
 	// Set the enable bit in the CTRL (CSR) to start the timer.
@@ -40,6 +42,7 @@ void toggle_systick_interrupt()
 
 // the current clock of the system
 uint32_t loc_clock = 0 ;
+uint32_t start = 0 ;
 
 // Handles when a Systick Interrupt is fired and only increments clock
 void SysTick_Handler()
@@ -51,10 +54,16 @@ void SysTick_Handler()
 void reset_clock()
 {
 	loc_clock = 0 ;
+	start = 0 ;
+}
+
+uint32_t get_true_clock()
+{
+	return loc_clock ;
 }
 
 // get the current clock value
 uint32_t get_clock()
 {
-	return loc_clock ;
+	return loc_clock - start ;
 }

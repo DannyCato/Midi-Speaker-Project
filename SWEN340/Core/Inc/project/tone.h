@@ -11,6 +11,11 @@
 #include "dac.h"
 
 /**
+ * Gets the frequency of a note from notes
+ */
+float get_frequency( uint8_t i ) ;
+
+/**
  * SysTick handler. Since tones are controlled by software, the SysTick timer
  * must be used accurately manage the times.
  */

@@ -23,9 +23,9 @@ typedef struct Button {
 	uint32_t last_last_fall ; // time
 	uint32_t last_rise ; // time
 	uint8_t is_pressed ; // bool
-	uint16_t double_click_timeout ; // ms
+	uint32_t double_click_timeout ; // ms
 	uint32_t double_click_timeout_cooldown ; // ms
-	uint16_t hold_timeout ; // ms
+	uint32_t hold_timeout ; // ms
 	uint8_t z_bounce ; // ms
 	uint8_t z_bounce_is_active ; // bool
 	uint32_t z_bounce_cooldown ; // time
@@ -41,11 +41,11 @@ void init_press_struct( Button* p ) {
 	p->last_fall = 0 ;
 	p->last_rise = 0xffffffff ; // set this to not zero so that the first press does not register as a double click
 	p->is_pressed = 0 ;
-	p->double_click_timeout = 250 ; // ms
-	p->hold_timeout = 1000 ; // ms
+	p->double_click_timeout = 250000 ; // ms
+	p->hold_timeout = 500000 ; // ms
 	p->z_bounce = 12 ; // ms
 	p->z_bounce_is_active = 0 ;
-	p->z_bounce_cooldown = 0 ;
+	p->z_bounce_cooldown = 0xffffffff ;
 }
 
 /**
@@ -80,12 +80,14 @@ void HAL_GPIO_EXTI_Callback( uint16_t GPIO_Pin )
 {
 	if ( GPIO_Pin == S1_Pin && local ) // only triggers S1 if local
 	{
+		printf("pressed") ;
 		uint32_t time_now = get_clock() ;
 		// activates only if not z_bounce is not active, if z_bounce is active but the timer expired, or the last event was the button being pushed down 
 		if ( !( breadboard_button.z_bounce_is_active ) || ( breadboard_button.z_bounce_is_active && breadboard_button.z_bounce_cooldown < time_now ) || ( breadboard_button.last_edge == breadboard_button.last_fall ) ) // if ( not active ) or ( active and timer_expired ) 
 		{
 			if ( ! ( breadboard_button.is_pressed ) )
 			{ // if not pressed
+				printf("down") ;
 				breadboard_button.last_last_fall = breadboard_button.last_fall ;
 				breadboard_button.last_fall = time_now ;
 				breadboard_button.last_edge = time_now ;
@@ -95,12 +97,13 @@ void HAL_GPIO_EXTI_Callback( uint16_t GPIO_Pin )
 			}
 			else
 			{ // if is pressed
+				printf("up") ;
 				breadboard_button.last_rise = time_now ;
 				breadboard_button.last_edge = time_now ;
 				breadboard_button.is_pressed = 0 ;
 			}
 			breadboard_button.z_bounce_is_active = 1 ;
-			breadboard_button.z_bounce_cooldown = time_now + breadboard_button.z_bounce ;
+			breadboard_button.z_bounce_cooldown = time_now + breadboard_button.z_bounce;
 		}
 	}
 
@@ -203,6 +206,7 @@ void press_event_handler()
 		clear_press_event_flag() ;
 		state_method = pause ;
 	}
+	printf(" STATE = %i  ", state) ;
 }
 
 /**
@@ -212,20 +216,23 @@ void local_handler()
 {
 	uint32_t time = get_clock() ;
 	// this is the code that stops the button from bouncing (BONUS)
-	if ( breadboard_button.z_bounce_cooldown < time )
+	if ( breadboard_button.z_bounce_cooldown < time && breadboard_button.z_bounce_is_active )
 	{
+		printf("off") ;
 		breadboard_button.z_bounce_is_active = 0 ;
 	} // This is a flag that is set by the interrupt handler to tell this that there is an update to the buttons current state
 	if ( breadboard_button.press_event_flag )
 	{
+		printf("active") ;
 		press_event_handler() ;
 	} // this activates the state method after the double_click cooldown has completed and then checks to make sure that the state is not being run twice with an exception for next()
 	if ( breadboard_button.double_click_timeout_cooldown < time && ( last_method != state_method || run_next) )
 	{
+		printf("timed out") ;
 		run_next = 0 ;
 		last_method = state_method ;
 		state_method() ;
 	}
-	// printf(".") ;	
+//	 printf(".") ;
 	
 }

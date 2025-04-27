@@ -13,6 +13,7 @@
 #include "stop.h"
 #include "blink.h"
 #include "local_controller.h"
+#include "audio_engine.h"
 
 
 char BUFFER[32];
@@ -140,5 +141,10 @@ void running() {
 			local_handler() ; // do local tasks
 		}
 		blink_handler() ; // handle blinking operations
+
+		if ( music_status() )
+		{
+			do_music() ;
+		}
 	}
 }

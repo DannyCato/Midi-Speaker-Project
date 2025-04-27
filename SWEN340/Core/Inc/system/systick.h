@@ -10,6 +10,8 @@
 
 #include <stdint.h>
 
+#pragma once
+
 #ifndef SYSTICK_REG
 #define SYSTICK_REG
 
