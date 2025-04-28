@@ -19,31 +19,53 @@ uint8_t next_song_flag = 1 ;
 sound music_queue[SOUNDS] ;
 uint8_t music_index = 0 ;
 
+/**
+ * sets the value of offset_time based on the current clock
+ */
 void set_offset_time()
 {
     offset_time = get_clock() ;
 }
 
+/**
+ * sets the next_song_flag to be 1
+ */
 void next_song()
 {
     next_song_flag = 1 ;
 }
 
+/**
+ * returns what time the song began at
+ * 
+ * @return uint32_t, starting time
+ */
 uint32_t get_start_time()
 {
     return start_time ;
 }
 
+/**
+ * return if the song should play
+ * 
+ * @return uint8_t
+ */
 uint8_t music_status()
 {
     return on ;
 }
 
+/**
+ * starts the music
+ */
 void music_resume() 
 {
     on = 1 ;
 }
 
+/**
+ * resumes and does a couple extra functions. meant to be called on the instantiation of a new song
+ */
 void music_on()
 {    
     start_time = get_clock() ;
@@ -51,11 +73,17 @@ void music_on()
     do_music() ;
 }
 
+/**
+ * stops the music
+ */
 void music_off()
 {
     on = 0 ;
 }
 
+/**
+ * resets everything. clears all buffers and values associated with the song
+ */
 void music_reset()
 {
     start_time = 0 ;
@@ -65,6 +93,9 @@ void music_reset()
     reset_parse() ;
 }
 
+/**
+ * clears a value of the music_queue
+ */
 void reset_sound_struct(int i)
 {
     music_queue[i].note = 0 ;

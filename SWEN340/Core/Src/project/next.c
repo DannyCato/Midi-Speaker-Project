@@ -33,6 +33,14 @@ float get_us_per_tpqn()
 //	putchar('\n') ;
 //}
 
+/**
+ * Parses length that is not variable length
+ * 
+ * @param address uint8_t*, pointer to the start of the length
+ * @param bytes uint8_t, the number of bytes to read
+ * 
+ * @return uint32_t of length
+ */
 uint32_t parse_normal_length( uint8_t* address, uint8_t bytes )
 {
 	uint32_t ret = 0 ;
@@ -44,6 +52,11 @@ uint32_t parse_normal_length( uint8_t* address, uint8_t bytes )
 	return ret ;
 }
 
+/**
+ * Fills the track struct with all zeroes
+ * 
+ * @param trk_n track*
+ */
 void init_mtrk( track* trk_n ) {
 	trk_n->start = 0 ;
 	trk_n->length = 0 ;
@@ -116,6 +129,9 @@ typedef struct meta_info {
 meta_info song_info ;
 uint8_t not_found[] = "No Information Found" ;
 
+/**
+ * Finds the info needed for printing from the next command
+ */
 void format_necessary_meta_events()
 {
 	song_info.copyright = not_found ;
@@ -161,6 +177,9 @@ void format_necessary_meta_events()
 	}
 }
 
+/**
+ * Gets a pointer to the instance of structured song 
+ */
 structuredSong* get_uSong()
 {
 	if ( !initialized)

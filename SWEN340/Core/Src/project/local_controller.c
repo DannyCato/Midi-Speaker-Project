@@ -80,14 +80,14 @@ void HAL_GPIO_EXTI_Callback( uint16_t GPIO_Pin )
 {
 	if ( GPIO_Pin == S1_Pin && local ) // only triggers S1 if local
 	{
-		printf("pressed") ;
+//		printf("pressed") ;
 		uint32_t time_now = get_clock() ;
 		// activates only if not z_bounce is not active, if z_bounce is active but the timer expired, or the last event was the button being pushed down 
 		if ( !( breadboard_button.z_bounce_is_active ) || ( breadboard_button.z_bounce_is_active && breadboard_button.z_bounce_cooldown < time_now ) || ( breadboard_button.last_edge == breadboard_button.last_fall ) ) // if ( not active ) or ( active and timer_expired ) 
 		{
 			if ( ! ( breadboard_button.is_pressed ) )
 			{ // if not pressed
-				printf("down") ;
+//				printf("down") ;
 				breadboard_button.last_last_fall = breadboard_button.last_fall ;
 				breadboard_button.last_fall = time_now ;
 				breadboard_button.last_edge = time_now ;
@@ -97,7 +97,7 @@ void HAL_GPIO_EXTI_Callback( uint16_t GPIO_Pin )
 			}
 			else
 			{ // if is pressed
-				printf("up") ;
+//				printf("up") ;
 				breadboard_button.last_rise = time_now ;
 				breadboard_button.last_edge = time_now ;
 				breadboard_button.is_pressed = 0 ;
@@ -206,7 +206,7 @@ void press_event_handler()
 		clear_press_event_flag() ;
 		state_method = pause ;
 	}
-	printf(" STATE = %i  ", state) ;
+//	printf(" STATE = %i  ", state) ;
 }
 
 /**
@@ -218,17 +218,17 @@ void local_handler()
 	// this is the code that stops the button from bouncing (BONUS)
 	if ( breadboard_button.z_bounce_cooldown < time && breadboard_button.z_bounce_is_active )
 	{
-		printf("off") ;
+//		printf("off") ;
 		breadboard_button.z_bounce_is_active = 0 ;
 	} // This is a flag that is set by the interrupt handler to tell this that there is an update to the buttons current state
 	if ( breadboard_button.press_event_flag )
 	{
-		printf("active") ;
+//		printf("active") ;
 		press_event_handler() ;
 	} // this activates the state method after the double_click cooldown has completed and then checks to make sure that the state is not being run twice with an exception for next()
 	if ( breadboard_button.double_click_timeout_cooldown < time && ( last_method != state_method || run_next) )
 	{
-		printf("timed out") ;
+//		printf("timed out") ;
 		run_next = 0 ;
 		last_method = state_method ;
 		state_method() ;

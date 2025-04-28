@@ -14,11 +14,21 @@ uint8_t EOT[] = {0, 0, 0} ;
 
 structuredSong* my_song ;
 
+/**
+ * Checks if the stored pointer to next's structured song is null and thus not initialized
+ * 
+ * @return uint8_t, if true
+ */
 uint8_t my_song_is_null()
 {
     return ( my_song == NULL ) ? 1 : 0 ;
 }
 
+/**
+ * Fills an event with null values
+ * 
+ * @param e
+ */
 void reset_event( event e )
 {
 	e.delay = 0 ;
@@ -29,6 +39,9 @@ void reset_event( event e )
 	// e.channel = 0 ;
 }
 
+/**
+ * reset all the indexes, buffers, and structs associated with this file to prepare it to restart
+ */
 void reset_parse()
 {
     my_song = get_uSong() ;
@@ -46,11 +59,23 @@ void reset_parse()
     }
 }
 
+/**
+ * TODO: find a way to measure what track to read from next depending on the values
+ * 
+ * @return track number, uint8_t 
+ */
 uint8_t next_track_to_parse()
 {
     return 0 ;
 }
 
+/**
+ * Parses the next event and pushes it to the list of events, if necessary
+ * 
+ * @param messages, uint8_t*. stream of bytes to read from the midi
+ * @param trk_num, uint8_t. what track is being read from
+ * @param trk_length, uint32_t. the length of the track
+ */
 void parse_next_event( uint8_t* messages, uint8_t trk_num, uint32_t trk_length )
 {
     uint16_t index = wbuffer_index % BF_Size ;
@@ -126,6 +151,11 @@ void parse_next_event( uint8_t* messages, uint8_t trk_num, uint32_t trk_length )
     parse_buffer_index[trk_num] += messages - starting_addr ;
 }
 
+/**
+ * values to begin the parsing of a song
+ * 
+ * @param s, structuresSong*. The struct to be reading from
+ */
 void start_buffered_parse_song( structuredSong* s ) 
 {
     my_song = s ;
@@ -141,6 +171,9 @@ void start_buffered_parse_song( structuredSong* s )
     }
 }
 
+/**
+ * Add a new event to the buffer until it becomes correct
+ */
 void refresh_buffer()
 {
     if (wbuffer_index - rbuffer_index < BF_Size && my_song->trks[0]->length > parse_buffer_index[0] )
@@ -150,11 +183,19 @@ void refresh_buffer()
     }
 }
 
+/**
+ * reads the next event from the buffer
+ * 
+ * @return event
+ */
 event read_next_event()
 {
     return buffer[rbuffer_index++ % BF_Size] ;
 }
 
+/**
+ * reads the time at which the next event should begin
+ */
 uint32_t get_next_time()
 {
     return buffer[rbuffer_index % BF_Size].at_time ;
