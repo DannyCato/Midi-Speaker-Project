@@ -103,7 +103,9 @@ void reset_sound_struct(int i)
     music_queue[i].velocity = 0 ;
 }
 
-
+/**
+ * called by play to start the music 
+ */
 void init_music()
 {
     if ( !next_song_flag )
@@ -122,7 +124,11 @@ void init_music()
     music_reset() ;
 }
 
-
+/**
+ * pushes an event to the music queue
+ * 
+ * @param e event
+ */
 void push( event e )
 {
     music_queue[music_index].note = e.info[0] ;
@@ -132,6 +138,11 @@ void push( event e )
     music_index++ ;
 }
 
+/**
+ * remove a note from music queue
+ * 
+ * @param e event
+ */
 void pop( event e )
 {
     uint8_t note = e.info[0] ;
@@ -155,6 +166,11 @@ void pop( event e )
     
 }
 
+/**
+ * called when the tone needs to be updated
+ * 
+ * @param clk, uint32_t. a clk time
+ */
 void drive_music(uint32_t clk)
 {
 	// printf("###") ;
@@ -175,6 +191,9 @@ void drive_music(uint32_t clk)
     }
 }
 
+/**
+ * general logic to handle playing music
+ */
 void do_music()
 {
     // printf("_") ;
