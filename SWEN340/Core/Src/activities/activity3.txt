@@ -1,8 +1,0 @@
-first song only
-Length: 6
-
-File Format: 1
-
-Num of tracks: 2
-
-Division: 256
