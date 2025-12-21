@@ -30,6 +30,10 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
+#include "usart.h"
+#include "stm32l4xx_hal_uart.h"
+#include "sysinit.h"
+
 
 /* Variables */
 extern int __io_putchar(int ch) __attribute__((weak));
@@ -41,6 +45,12 @@ char **environ = __env;
 
 
 /* Functions */
+void STDIO_Init() {
+  setvbuf(stdin, NULL, _IONBF, 0);
+  setvbuf(stdout, NULL, _IONBF, 0);
+  setvbuf(stderr, NULL, _IONBF, 0);
+}
+
 void initialise_monitor_handles()
 {
 }
@@ -64,28 +74,49 @@ void _exit (int status)
   while (1) {}    /* Make sure we hang here */
 }
 
+__weak int _write(int, char*, int);
 __attribute__((weak)) int _read(int file, char *ptr, int len)
 {
   (void)file;
-  int DataIdx;
+  // int DataIdx;
 
-  for (DataIdx = 0; DataIdx < len; DataIdx++)
-  {
-    *ptr++ = __io_getchar();
+  int count = 0;
+  uint8_t ch;
+
+  if (len <= 0) {
+    return 0;
   }
 
+  while (count < len) {
+    if (HAL_UART_Receive(&huart2, &ch, 1, HAL_MAX_DELAY)) {
+      break;
+    }
+    ptr[count++] = ch;
+
+    // HAL_UART_Transmit(&huart2, &ch, 1, HAL_MAX_DELAY);
+
+    if (ch == '\n' || ch == '\r') {
+      break;
+    }
+  }
+  // for (DataIdx = 0; DataIdx < len; DataIdx++)
+  // {
+  //   *ptr++ = __io_getchar();
+  // }
   return len;
 }
 
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
   (void)file;
-  int DataIdx;
+  // int DataIdx;
 
-  for (DataIdx = 0; DataIdx < len; DataIdx++)
-  {
-    __io_putchar(*ptr++);
-  }
+  HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, 1000);
+  // for (DataIdx = 0; DataIdx < len; DataIdx++)
+  // {
+    
+  //   __io_putchar(*ptr++);
+  // }
   return len;
 }
 

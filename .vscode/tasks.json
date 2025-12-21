@@ -28,7 +28,7 @@
                 "port=SWD",
                 "-w",
                 "${workspaceRoot}/build/${workspaceFolderBasename}.elf",
-                "-v",
+                // "-v", // no more verbose please!
                 "-rst"
             ],
             "dependsOn": [
