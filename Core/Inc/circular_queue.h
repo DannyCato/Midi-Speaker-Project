@@ -24,8 +24,8 @@ typedef struct {
     queue_content_size content_size;
 } queue;
 
-void get_next(queue* q, uint32_t* return_item);
-void put_next(queue* q, uint32_t put_item);
+void pop(queue* q, void* return_item);
+void push(queue* q, uint32_t put_item);
 void init_queue(queue* record_keeper, void* first_element, uint32_t size, queue_content_size content_size);
 
 #endif

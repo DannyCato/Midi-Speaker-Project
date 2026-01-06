@@ -6,17 +6,17 @@
 #endif
 
 // Prototypes
-void _dequeue(queue*, uint32_t*);
+void _dequeue(queue*, void*);
 void _enqueue(queue*, uint32_t);
 void _inc_head(queue*);
 void _inc_tail(queue*);
 void _set_next_addr(queue*, void**);
 
-void get_next(queue* q, uint32_t* return_item) {
+void pop(queue* q, void* return_item) {
     _dequeue(q, return_item);
 }
 
-void put_next(queue* q, uint32_t put_item) {
+void push(queue* q, uint32_t put_item) {
     _enqueue(q, put_item);
 }
 
@@ -30,17 +30,17 @@ void init_queue(queue* record_keeper, void* first_element, uint32_t size, queue_
     record_keeper->number_enqueued = 0;    
 }
 
-void _dequeue(queue* q, uint32_t* return_item) {
+void _dequeue(queue* q, void* return_item) {
     if (q->number_enqueued == 0) {
         return;
     }
     switch (q->content_size) {
         case QUEUE_8:
-        *return_item = *(uint8_t*)q->tail; 
+        *(uint8_t*)return_item  = *(uint8_t*) q->tail; 
         case QUEUE_16: 
-        *return_item = *(uint16_t*)q->tail; 
+        *(uint16_t*)return_item = *(uint16_t*)q->tail; 
         case QUEUE_32:
-        *return_item = *(uint32_t*)q->tail;
+        *(uint32_t*)return_item = *(uint32_t*)q->tail;
     }
     q->number_enqueued -= 1;
     _inc_tail(q);
@@ -52,11 +52,11 @@ void _enqueue(queue* q, uint32_t new_val) {
     }
     switch (q->content_size) {
         case QUEUE_8:
-        *(uint8_t*)q->head = new_val; 
+        *(uint8_t*)q->head  = (uint8_t)  new_val; 
         case QUEUE_16: 
-        *(uint16_t*)q->head = new_val;
+        *(uint16_t*)q->head = (uint16_t) new_val;
         case QUEUE_32:
-        *(uint32_t*)q->head = new_val;
+        *(uint32_t*)q->head = (uint32_t) new_val;
     }
     q->number_enqueued += 1;
     _inc_head(q);

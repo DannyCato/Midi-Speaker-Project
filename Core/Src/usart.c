@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
-#include "stm32l4xx_hal_uart.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -145,7 +144,5 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
-void DMA_Write(uint8_t* data, uint32_t length) {
-  HAL_UART_Transmit_DMA(&huart2, data, length);
-}
+
 /* USER CODE END 1 */
