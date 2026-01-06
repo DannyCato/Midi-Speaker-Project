@@ -2,14 +2,14 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build STM32 Project",
+            "label": "Build STM32 Project", // compiles the project
             "type": "shell",
             "command": "cmake",
             "args": [
                 "--build",
-                "${workspaceRoot}/build",
+                "${workspaceRoot}/build", // build file location
                 "--config",
-                "Debug"
+                "Debug" // configuration style
             ],
             "group": {
                 "kind": "build",
@@ -20,16 +20,16 @@
             ]
         },
         {
-            "label": "Flash STM32 Board",
+            "label": "Flash STM32 Board", // writes the compiled project to the board
             "type": "shell",
             "command": "STM32_Programmer_CLI",
             "args": [
                 "-c",
-                "port=SWD",
+                "port=SWD", // Flashing interface
                 "-w",
-                "${workspaceRoot}/build/${workspaceFolderBasename}.elf",
+                "${workspaceRoot}/build/${workspaceFolderBasename}.elf", // executable file location
                 // "-v", // no more verbose please!
-                "-rst"
+                "-rst" // reset on finish
             ],
             "dependsOn": [
                 "Build STM32 Project"
@@ -41,7 +41,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Build and Flash",
+            "label": "Build and Flash", // does both
             "dependsOn": [
                 "Build STM32 Project",
                 "Flash STM32 Board"

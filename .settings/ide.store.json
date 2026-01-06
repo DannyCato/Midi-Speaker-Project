@@ -1,7 +1,7 @@
 {
-  "board": "NUCLEO-L476RG",
-  "device": "STM32L476RGT3",
+  "board": "NUCLEO-L476RG", // Change this to target different board
+  "device": "STM32L476RGT3", // Change this to target different CPU
   "toolchain": "GCC",
-  "core": "Cortex-M4",
+  "core": "Cortex-M4", // Change this to target different architecture
   "order": 0
 }

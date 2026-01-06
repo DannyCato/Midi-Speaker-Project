@@ -19,6 +19,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dac.h"
+#include "dma.h"
+#include "stm32l4xx_hal_uart.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -88,17 +90,19 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_DAC1_Init();
   /* USER CODE BEGIN 2 */
-  char a;
+  // char a;
+  HAL_UART_Transmit_DMA(&huart2, const uint8_t *pData, uint16_t Size)
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    scanf("%1c", &a);
-    printf("%c, %02x\r\n", a, a);
+    // scanf("%1c", &a);
+    // printf("%c, %02x\r\n", a, a);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
